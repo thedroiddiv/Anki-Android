@@ -48,7 +48,9 @@ import com.ichi2.anki.preferences.sharedPrefs
 import com.ichi2.compat.CompatHelper
 import com.ichi2.themes.Themes.currentTheme
 import com.ichi2.utils.DisplayUtils.getDisplayDimensions
-import com.mrudultora.colorpicker.ColorPickerPopUp
+import com.skydoves.colorpickerview.ColorEnvelope
+import com.skydoves.colorpickerview.ColorPickerDialog
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import timber.log.Timber
 import java.io.FileNotFoundException
 import kotlin.math.abs
@@ -395,22 +397,26 @@ class Whiteboard(
                 penColor = yellowPenColor
             }
             R.id.pen_color_custom -> {
-                ColorPickerPopUp(context).run {
-                    setShowAlpha(true)
-                    setDefaultColor(penColor)
-                    setOnPickColorListener(
-                        object : ColorPickerPopUp.OnPickColorListener {
-                            override fun onColorPicked(color: Int) {
-                                penColor = color
-                            }
-
-                            override fun onCancel() {
-                                // unused
+                ColorPickerDialog
+                    .Builder(context)
+                    .setTitle(R.string.choose_color)
+                    .setPositiveButton(
+                        R.string.dialog_ok,
+                        object : ColorEnvelopeListener {
+                            override fun onColorSelected(
+                                envelope: ColorEnvelope?,
+                                fromUser: Boolean,
+                            ) {
+                                envelope?.let {
+                                    penColor = envelope.color
+                                }
                             }
                         },
-                    )
-                    show()
-                }
+                    ).setNegativeButton(R.string.dialog_cancel, null)
+                    .attachAlphaSlideBar(true)
+                    .attachBrightnessSlideBar(true)
+                    .setBottomSpace(12)
+                    .show()
             }
             R.id.stroke_width -> {
                 handleWidthChangeDialog()
